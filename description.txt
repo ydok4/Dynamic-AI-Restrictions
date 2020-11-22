@@ -1,0 +1,77 @@
+This is a mod which adds some restrictions to the AI that change depending on the AI faction's strength and the player strength. The aim being to reign in the number of armies the AI can maintain without feeling like we are helping the player too much.
+
+This is comprised of two main features:
+-Army limits for AI
+-Confederation restrictions for AI
+[quote]Army limits and confederation restrictions do not apply to the player's faction[/quote]
+Unlike other mods, these restrictions will change over the course of the campaign.
+
+[h1]Army Limits[/h1]
+A faction's army limit is is determined by:
+A base value for the faction or subculture (See pinned thread [url=https://steamcommunity.com/workshop/filedetails/discussion/2294629023/2969523484452046405/]here[/url]).
+The number of province capitals they control with a suitable climate (excludes some regions like Forts and Gates).
+A bonus value if the AI faction does not belong to the same alignment as the player (see below).
+A bonus value if the player faction grows in strength. (see below)
+
+[b]Other caveats[/b]
+Army limits do not apply to factions which already have army limit mechanics.
+This includes: Tomb Kings and Nakai.
+There will always be a minimum of 1 army available.
+Hordes are also excluded from this (they already need all the help they can get).
+
+[h1]Confederation Restriction[/h1]
+[b]At the beginning of the game[/b]
+Factions belonging to Forces of Order (See below) will always have confederation restricted.
+Factions belong to Forces of Destruction (See below) will only have confederation restricted if the player is a part of that race.
+
+[b]As the campaign progresses[/b]
+Order factions will have confederations unrestricted after the player reaches the required strength (see below).
+Additionally, if the player is a certain race or subculture, confederations may be unrestricted earlier for certain 'rival' factions/subculture. 
+
+See the stickied post [url=https://steamcommunity.com/workshop/filedetails/discussion/2294629023/2969523484452046405/]here[/url] for more info on the rivalries.
+
+The intent behind both changes is that the player is the one who will need to do the heavy lifting.
+[quote]This does not disable confederations for factions with unique confederation mechanics, eg Greenskin subjugation.[/quote]
+
+[h2]Alignment[/h2]
+Alignment is based on the culture of a faction.
+Every faction culture belongs to an alignment.
+These are based on (although not identical) to the forces or order/chaos/destruction from the table top.
+
+[b]Forces of Order[/b]
+Empire (also Kislev and TEB)
+Bretonnia
+High Elves
+Lizardmen
+Dwarfs
+
+[b]Forces of Chaos[/b]
+Chaos (Includes Norsca)
+Beastmen
+
+[b]Forces of Destruction[/b]
+Vampire Counts
+Greenskins
+Skaven
+Vampire Coast
+Dark Elves
+
+[b]Unaligned[/b]
+Note: These factions are separate from the rest but are also considered separate from each other.
+Tomb Kings
+Wood Elves
+
+[h2]Player Strength[/h2]
+Player strength is determined by imperium level. This value isn't visible in the campaign but will increase based on factors such as faction territory, number of armies/units and technology. In the base game, this value is used as the alternate trigger of the chaos invasion.
+
+[h2]Compatibility[/h2]
+Features do not apply to custom subcultures (Eg OvN).
+Features will apply to custom factions assuming they are not using a custom subculture (they may be weaker than intended though).
+Support is included for [url=https://steamcommunity.com/workshop/filedetails/?id=1158737832]Cataph's Southern Realms[/url]
+
+[h1]Designer notes[/h1]
+I've been using this for a while and am pretty happy with the results. I made this to assist with the order tide which can sometimes occur.
+
+I usually play on campaign difficulty of hard while using [url=https://steamcommunity.com/sharedfiles/filedetails/?id=1214959308]Boyz Will Be Boyz - Closer to Tabletop overhaul (CTT)[/url] and [url=https://steamcommunity.com/sharedfiles/filedetails/?id=1456828999]Table Top Caps[/url] (alongside another mod I've worked on [url=https://steamcommunity.com/sharedfiles/filedetails/?id=1593262224]Public Order: Expanded[/url]).
+
+Different overhauls may provide different results.

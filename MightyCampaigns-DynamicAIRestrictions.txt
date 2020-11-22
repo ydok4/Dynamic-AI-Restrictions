@@ -1,0 +1,9 @@
+Player imperium: 9   : [22, 11 2020 12:05:13]
+Unrestricting order forces confederations...   : [22, 11 2020 12:05:13]
+IRD: Unrestricting confderations for wh_main_emp_empire   : [22, 11 2020 12:05:13]
+IRD: Unrestricting confderations for wh_main_brt_bretonnia   : [22, 11 2020 12:05:13]
+IRD: Unrestricting confderations for wh2_main_hef_high_elves   : [22, 11 2020 12:05:13]
+IRD: Unrestricting confderations for wh2_main_lzd_lizardmen   : [22, 11 2020 12:05:13]
+IRD: Unrestricting confderations for wh_main_dwf_dwarfs   : [22, 11 2020 12:05:13]
+FINISHED
+
