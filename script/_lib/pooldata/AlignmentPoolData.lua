@@ -80,30 +80,50 @@ function GetAlignmentPoolData()
             wh_main_sc_ksl_kislev = -1,
             wh2_main_sc_skv_skaven = 2,
             wh_main_sc_dwf_dwarfs = -1,
-            wh2_main_sc_hef_high_elves = -1,
+            wh2_main_sc_hef_high_elves = -2,
             wh2_main_sc_lzd_lizardmen = -1,
             wh_main_sc_nor_norsca = 1,
-            -- Factions
+            -- Order aligned major Factions
             wh_main_emp_empire = 0,
             wh2_dlc13_emp_golden_order = 0,
-            wh2_dlc13_emp_the_huntmarshals_expedition = 0,
             wh_main_brt_bretonnia = 0,
             wh_main_brt_carcassonne = 0,
             wh2_dlc14_brt_chevaliers_de_lyonesse = 0,
             wh_main_ksl_kislev = 0,
+            -- Matches default - Testing purposes
+            wh2_dlc13_emp_the_huntmarshals_expedition = -1,
+            -- Difficult start amongst enemies
             wh2_main_hef_order_of_loremasters = 0,
-            wh2_main_hef_eataine = 0,
-            wh2_main_hef_avelorn = 0,
-            wh2_main_hef_nagarythe = 0,
+            -- If one high elf faction should be more a threat, its this one
+            wh2_main_hef_eataine = -1,
+            -- Has a difficult start
             wh2_dlc15_hef_imrik = 0,
-            wh2_main_hef_tiranoc = 0,
-            wh2_main_hef_yvresse = 0,
+            -- Starts with multiple armies, so not as big a penalty
+            wh2_main_hef_yvresse = -1,
+            -- Major lizardmen factions should be more of a threat
             wh2_main_lzd_hexoatl = 0,
-            wh2_main_lzd_last_defenders = 0,
             wh2_main_lzd_itza = 0,
             wh2_dlc12_lzd_cult_of_sotek = 0,
+            -- Except defenders, they get rolling too easily
+            wh2_main_lzd_last_defenders = -1,
+            -- Can overperform sometimes
+            wh2_dlc14_grn_red_cloud = 0,
+            -- High elf campaigns are more interesting if the Dark Elves are stronger
             wh2_main_def_naggarond = 1,
             wh2_main_def_scourge_of_khaine = 1,
+            -- Helps Morathi out
+            wh2_main_def_cult_of_pleasure = 1,
+            wh2_main_def_ssildra_tor = -1,
+            -- Helps the Naggarond AI out
+            wh2_dlc16_grn_naggaroth_orcs = 0,
+            wh2_main_skv_clan_septik = 1,
+            -- These two tend to overperform in the Badlands
+            wh_main_dwf_dwarfs = -2, -- They still beat Grimgor!
+            wh_main_dwf_karak_azul = -2,
+            -- Grimgor needs some help
+            wh_main_grn_greenskins = 2,
+            -- Mixu Unlocker specific
+            wh2_main_wef_wychwethyl = -1,
         },
         -- Factions starting with single regions
         -- get too big of an advantage. Eg Elyrion

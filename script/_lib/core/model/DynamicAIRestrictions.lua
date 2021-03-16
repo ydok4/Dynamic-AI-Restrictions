@@ -1,5 +1,5 @@
 DynamicAIRestrictions = {
-    HumanFaction = {};
+    HumanFactions = {};
     Resources = {
 
     },
@@ -24,7 +24,7 @@ function DynamicAIRestrictions:Initialise(core, enableLogging)
     self.Logger:Initialise("MightyCampaigns-DynamicAIRestrictions.txt", enableLogging);
     require 'script/_lib/pooldata/AlignmentPoolData'
     self.Resources = GetAlignmentPoolData();
-    self.HumanFaction = self:GetHumanFaction();
+    self:SetHumanFactions();
     self:SetupListeners(core);
     self.Logger:Log_Start();
     if cm:is_new_game() then
@@ -33,14 +33,14 @@ function DynamicAIRestrictions:Initialise(core, enableLogging)
     end
 end
 
-function DynamicAIRestrictions:GetHumanFaction()
+function DynamicAIRestrictions:SetHumanFactions()
     local allHumanFactions = cm:get_human_factions();
     if allHumanFactions == nil then
-        return allHumanFactions;
+        return nil;
     end
-    for key, humanFaction in pairs(allHumanFactions) do
-        local faction = cm:model():world():faction_by_key(humanFaction);
-        return faction;
+    for key, humanFactionKey in pairs(allHumanFactions) do
+        local faction = cm:model():world():faction_by_key(humanFactionKey);
+        self.HumanFactions[humanFactionKey] = faction;
     end
 end
 
@@ -81,7 +81,7 @@ function DynamicAIRestrictions:SetupListeners(core)
         function(context)
             local faction = context:faction();
             local factionName = faction:name();
-            return self.HumanFaction:name() == factionName;
+            return self.HumanFactions[factionName] ~= nil;
         end,
         function(context)
             self.Logger:Log_Start();
@@ -103,13 +103,16 @@ function DynamicAIRestrictions:SetupListeners(core)
             end
             -- Check if player meets the imperium level to enable confederations again
             local unrestrictOrderFederations = cm:get_saved_value("unrestrict_order_federations");
-            if playerImperiumLevel > 5 then
+            if playerImperiumLevel > 6 then
                 if unrestrictOrderFederations == false then
-                    self.Logger:Log("Unrestricting order forces confederations...");
-                    for index, cultureKey in pairs(self.Resources.Alignments["ForcesOfOrder"]) do
-                        self:UnRestrictConfederationsForCulture(cultureKey);
+                    local playersAlignment = self:GetPlayersAlignment();
+                    if playersAlignment["ForcesOfOrder"] ~= nil then
+                        self.Logger:Log("Unrestricting order forces confederations...");
+                        for index, cultureKey in pairs(self.Resources.Alignments["ForcesOfOrder"]) do
+                            self:UnRestrictConfederationsForCulture(cultureKey);
+                        end
+                        cm:set_saved_value("unrestrict_order_federations", true);
                     end
-                    cm:set_saved_value("unrestrict_order_federations", true);
                 end
             elseif unrestrictOrderFederations == false then
                 self:SetupDiplomacyRestrictions();
@@ -226,9 +229,9 @@ function DynamicAIRestrictions:CreateCachedData(faction)
         overallLordCap = 0;
     end
 
-    local playerAlignment = self:GetPlayerAlignment();
+    local playersAlignment = self:GetPlayersAlignment();
     local factionAlignment = self:GetFactionAlignment(faction);
-    if playerAlignment ~= factionAlignment then
+    if playersAlignment[factionAlignment] == nil then
         local bonusAlignmentArmies = cm:get_saved_value("bonus_alignment_armies");
         overallLordCap = overallLordCap + bonusAlignmentArmies;
     end
@@ -278,20 +281,33 @@ function DynamicAIRestrictions:GetFactionBonusArmies(faction)
 end
 
 function DynamicAIRestrictions:SetupDiplomacyRestrictions()
-    local playerCulture = self.HumanFaction:culture();
+    local playerCultures = {};
+    for humanFactionKey, humanFaction in pairs(self.HumanFactions) do
+        playerCultures[humanFaction:culture()] = humanFaction;
+    end
+
     -- Initialise starting confederation options
     for alignmentType, cultureAlignments in pairs(self.Resources.Alignments) do
         if alignmentType == "ForcesOfOrder" then
             for index, cultureKey in pairs(cultureAlignments) do
-                self:RestrictConfederationsForCulture(cultureKey, self.HumanFaction);
+                self:RestrictConfederationsForCulture(cultureKey);
             end
         elseif alignmentType == "ForcesOfDestruction" then
             for index, cultureKey in pairs(cultureAlignments) do
-                if playerCulture == cultureKey
+                if playerCultures[cultureKey] ~= nil
                 and cultureKey ~= "wh_main_grn_greenskins"
                 and cultureKey ~= "wh_main_sc_vmp_vampire_counts" then
-                    self:RestrictConfederationsForCulture(cultureKey, self.HumanFaction);
+                    self:RestrictConfederationsForCulture(cultureKey);
                 end
+            end
+        end
+        for humanFactionKey, humanFaction in pairs(self.HumanFactions) do
+            -- As per vanilla, tomb kings and vampire coast can't confederate
+            if humanFaction:culture() ~= "wh2_dlc09_tmb_tomb_kings"
+            and humanFaction:culture() ~= "wh2_dlc11_cst_vampire_coast" then
+                cm:callback(function()
+                    self:UnRestrictConfederationsForFaction(humanFaction);
+                end, 0.2);
             end
         end
     end
@@ -319,10 +335,15 @@ function DynamicAIRestrictions:UnRestrictConfederationsForFaction(exceptFaction)
     cm:force_diplomacy("faction:"..exceptFaction:name(), "all", "form confederation", true, true, false);
 end
 
-function DynamicAIRestrictions:GetPlayerAlignment()
+-- This should only be used for single player functions
+function DynamicAIRestrictions:GetPlayersAlignment()
     self:CreateAlignmentCache();
-    local playerCulture = self.HumanFaction:culture();
-    return self.CachedData.CulturesToAlignments[playerCulture];
+    local alignments = {};
+    for humanFactionKey, humanFaction in pairs(self.HumanFactions) do
+        local playerCulture = humanFaction:culture();
+        alignments[self.CachedData.CulturesToAlignments[playerCulture]] = playerCulture;
+    end
+    return alignments;
 end
 
 function DynamicAIRestrictions:GetFactionAlignment(faction)

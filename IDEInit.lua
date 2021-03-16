@@ -432,7 +432,7 @@ function get_cm()
             return;
         end,
         get_human_factions = function()
-            return {humanFaction};
+            return {humanFaction:name()};
         end,
         disable_event_feed_events = function() end,
         turn_number = function() return turn_number; end,
