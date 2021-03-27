@@ -24,9 +24,9 @@ function DynamicAIRestrictions:Initialise(core, enableLogging)
     self.Logger:Initialise("MightyCampaigns-DynamicAIRestrictions.txt", enableLogging);
     require 'script/_lib/pooldata/AlignmentPoolData'
     self.Resources = GetAlignmentPoolData();
+    self.Logger:Log_Start();
     self:SetHumanFactions();
     self:SetupListeners(core);
-    self.Logger:Log_Start();
     if cm:is_new_game() then
         self.Logger:Log("Initialising new game options...");
         self:SetupNewGameOptions();
@@ -39,6 +39,7 @@ function DynamicAIRestrictions:SetHumanFactions()
         return nil;
     end
     for key, humanFactionKey in pairs(allHumanFactions) do
+        self.Logger:Log("Found human faction: "..humanFactionKey);
         local faction = cm:model():world():faction_by_key(humanFactionKey);
         self.HumanFactions[humanFactionKey] = faction;
     end
@@ -54,6 +55,7 @@ function DynamicAIRestrictions:SetupNewGameOptions()
     cm:set_saved_value("last_rival_imperium_level", self.MinimumRequiredImperiumForRival);
     -- Set unrestrict order confederations
     cm:set_saved_value("unrestrict_order_federations", false);
+    -- Setup Dark Elf/High Elf diplomacy
     self.Logger:Log("Finished new game options.");
 end
 
@@ -68,8 +70,31 @@ function DynamicAIRestrictions:SetupListeners(core)
         end,
         function(context)
             local faction = context:faction();
+            local factionKey = faction:name();
             self.Logger:Log("Doing limits for faction: "..faction:name());
             self:ApplyArmyLimits(faction);
+            local unrestrictOrderFederations = cm:get_saved_value("unrestrict_order_federations");
+            -- If the player has reached a high enough imperium level
+            if unrestrictOrderFederations == true then
+                -- If this is a high elf faction, remove the dark elf diplomacy restriction,
+                -- The effect bundle check should ensure this only happens once
+                if self.Resources.HighElfFactions[factionKey] ~= nil
+                and faction:has_effect_bundle("ird_restored_diplomacy") == false then
+                    local playersAlignment = self:GetPlayersAlignment();
+                    -- If the player isn't the same alignment as Order
+                    -- This ensures the High Elves stay kinda passive
+                    -- It is possible for minor factions to declare war on dark elves
+                    -- if they are in a military alliance with teclis, tyrion or Alith Anar
+                    if playersAlignment["ForcesOfOrder"] ~= nil then
+                        self.Logger:Log("Removing HEF AI war declaration restriction for faction: "..factionKey);
+                        self:SetupHighElfDiplomacyRestrictions(true, factionKey);
+                        cm:apply_effect_bundle("ird_restored_diplomacy", factionKey, 0);
+                        core:remove_listener("DAI_RegionTurnStart");
+                        self.Logger:Log_Finished();
+                    end
+                end
+            end
+
             self.Logger:Log_Finished();
         end,
         true
@@ -103,7 +128,7 @@ function DynamicAIRestrictions:SetupListeners(core)
             end
             -- Check if player meets the imperium level to enable confederations again
             local unrestrictOrderFederations = cm:get_saved_value("unrestrict_order_federations");
-            if playerImperiumLevel > 6 then
+            if playerImperiumLevel > 5 then
                 if unrestrictOrderFederations == false then
                     local playersAlignment = self:GetPlayersAlignment();
                     if playersAlignment["ForcesOfOrder"] ~= nil then
@@ -159,10 +184,43 @@ function DynamicAIRestrictions:SetupListeners(core)
 				end
             end
             --DynamicAIRestrictions BEGIN
-            self:SetupDiplomacyRestrictions();
+            local unrestrictOrderFederations = cm:get_saved_value("unrestrict_order_federations");
+            -- If we've already unrestricted order factions, then there isn't
+            -- any point resetting restrictions
+            if unrestrictOrderFederations == false then
+                self:SetupDiplomacyRestrictions();
+            end
             --DynamicAIRestrictions END
 		end,
 		true
+    );
+    local campaignName = cm:get_campaign_name();
+    core:add_listener(
+        "DAI_RegionTurnStart",
+        "RegionTurnStart",
+        function(context)
+            local region = context:region();
+            local regionName = region:name();
+            return not region:is_null_interface()
+            and not region:is_abandoned()
+            and self.Resources.UlthuanRegions[campaignName][regionName] == true;
+        end,
+        function(context)
+            local region = context:region();
+            local regionName = region:name();
+            local owningFaction = region:owning_faction();
+            if owningFaction:subculture() == "wh2_main_sc_def_dark_elves"
+            and owningFaction:has_effect_bundle("ird_restored_diplomacy") == false then
+                self.Logger:Log("Checking Ulthuan region: "..regionName);
+                local factionKey = owningFaction:name();
+                self.Logger:Log("Allowing Elven war against: "..factionKey);
+                self:SetupHighElfDiplomacyRestrictions(true, factionKey);
+                cm:apply_effect_bundle("ird_restored_diplomacy", factionKey, 0);
+                self.Logger:Log("Finished high elf diplomacy change");
+                self.Logger:Log_Finished();
+            end
+        end,
+        true
     );
     if core:is_mod_loaded("liche_init") then
         self.LoadedLichemaster = true;
@@ -218,8 +276,9 @@ function DynamicAIRestrictions:CreateCachedData(faction)
             end
         end
     end
-    self.Logger:Log("Finished checking climates...");
+    self.Logger:Log("Region/Climate bonus is: "..overallLordCap);
     local factionBonusArmies = self:GetFactionBonusArmies(faction);
+    self.Logger:Log("Faction bonus is: "..factionBonusArmies);
     overallLordCap = overallLordCap + factionBonusArmies;
     if factionKey == "wh2_dlc11_def_the_blessed_dread"
     and overallLordCap < 1
@@ -231,11 +290,14 @@ function DynamicAIRestrictions:CreateCachedData(faction)
 
     local playersAlignment = self:GetPlayersAlignment();
     local factionAlignment = self:GetFactionAlignment(faction);
-    if playersAlignment[factionAlignment] == nil then
+    if playersAlignment[factionAlignment] == nil
+    and (self.Resources.OrderAlignmentBonusFactions[factionKey] == true
+    or factionAlignment ~= "ForcesOfOrder") then
         local bonusAlignmentArmies = cm:get_saved_value("bonus_alignment_armies");
+        self.Logger:Log("Adding alignment bonus ("..bonusAlignmentArmies..") to faction: "..factionKey);
         overallLordCap = overallLordCap + bonusAlignmentArmies;
     end
-    self.Logger:Log("Finished checking alignment bonuses");
+
     self.Logger:Log("Army limit: "..overallLordCap);
     self.CachedData.FactionKey = factionKey;
     self.CachedData.LordCap = overallLordCap;
@@ -301,14 +363,16 @@ function DynamicAIRestrictions:SetupDiplomacyRestrictions()
                 end
             end
         end
-        for humanFactionKey, humanFaction in pairs(self.HumanFactions) do
-            -- As per vanilla, tomb kings and vampire coast can't confederate
-            if humanFaction:culture() ~= "wh2_dlc09_tmb_tomb_kings"
-            and humanFaction:culture() ~= "wh2_dlc11_cst_vampire_coast" then
-                cm:callback(function()
-                    self:UnRestrictConfederationsForFaction(humanFaction);
-                end, 0.2);
-            end
+    end
+    -- Then remove the restrictions for the player
+    for humanFactionKey, humanFaction in pairs(self.HumanFactions) do
+        self.Logger:Log("Human faction is: "..humanFactionKey);
+        -- As per vanilla, tomb kings and vampire coast can't confederate
+        if humanFaction:culture() ~= "wh2_dlc09_tmb_tomb_kings"
+        and humanFaction:culture() ~= "wh2_dlc11_cst_vampire_coast" then
+            cm:callback(function()
+                self:UnRestrictConfederationsForFaction(humanFaction);
+            end, 0.2);
         end
     end
 end
@@ -356,6 +420,25 @@ function DynamicAIRestrictions:CreateAlignmentCache()
         for alignmentKey, cultureAlignments in pairs(self.Resources.Alignments) do
             for index, cultureKey in pairs(cultureAlignments) do
                 self.CachedData.CulturesToAlignments[cultureKey] = alignmentKey;
+            end
+        end
+    end
+end
+
+function DynamicAIRestrictions:SetupHighElfDiplomacyRestrictions(restriction, factionKey)
+    local restrictionTarget = "culture:wh2_main_def_dark_elves";
+    if factionKey ~= nil then
+        restrictionTarget = "faction:"..factionKey;
+    end
+    -- Stop/Start minor and most major factions from declaring war on Dark Elves
+    for index, factionKey in pairs(self.Resources.HighElfFactions) do
+        if factionKey ~= "wh2_main_hef_order_of_loremasters"
+        and factionKey ~= "wh2_main_hef_eataine"
+        and factionKey ~= "wh2_main_hef_nagarythe" then
+            local faction = cm:get_faction(factionKey);
+            if faction
+            and not faction:is_human() then
+                cm:force_diplomacy("faction:" .. factionKey, restrictionTarget, "war", restriction, restriction, false);
             end
         end
     end

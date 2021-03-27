@@ -333,7 +333,7 @@ testRegion = {
     religion_proportion = function() return 0; end,
     public_order = function() return -99; end,
     owning_faction = function() return testFaction; end,
-    name = function() return "wh_main_couronne_et_languille_couronne"; end,
+    name = function() return "wh2_main_caledor_vauls_anvil"; end,
     is_province_capital = function() return false; end,
     is_abandoned = function() return false; end,
     command_queue_index = function() return 10; end,
@@ -761,3 +761,14 @@ local DAIR_UpdateConfederationOptionsMax = {
     },
 };
 mock_listeners:trigger_listener(DAIR_UpdateConfederationOptionsMax);
+
+local DAI_RegionTurnStart = {
+    Key = "DAI_RegionTurnStart",
+    Context = {
+        region = function()
+            return testRegion;
+        end,
+    },
+};
+mock_listeners:trigger_listener(DAI_RegionTurnStart);
+
