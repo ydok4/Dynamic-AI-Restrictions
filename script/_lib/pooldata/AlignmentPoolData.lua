@@ -31,8 +31,22 @@ function GetAlignmentPoolData()
             },
         },
         -- Certain factions have rivals  which may have confederation options
-        -- relaxed over time when the player reaches appropriate imperium levels
+        -- relaxed over time when the player reaches appropriate imperium levels.
+        -- Additionally, Vampire Counts will get 100% upkeep reduction for zombies + skeles and additional recruitment slots
         Rivals = {
+            -- Bretonnia
+            wh_main_brt_bretonnia = {
+                Factions = { "wh_main_vmp_mousillon", "wh2_dlc11_vmp_the_barrow_legion", },
+                MinimumImperium = 1,
+            },
+            wh_main_brt_carcassonne = {
+                Factions = { "wh_main_vmp_mousillon", "wh2_dlc11_vmp_the_barrow_legion", },
+                MinimumImperium = 1,
+            },
+            wh_main_brt_bordeleaux = {
+                Factions = { "wh_main_vmp_mousillon", "wh2_dlc11_vmp_the_barrow_legion", },
+                MinimumImperium = 1,
+            },
             -- Dark Elves
             wh2_main_def_naggarond = {
                 Factions = { "wh2_main_hef_eataine", "wh2_main_hef_avelorn", },
@@ -45,6 +59,15 @@ function GetAlignmentPoolData()
             },
             wh2_dlc11_def_the_blessed_dread = {
                 Factions = { "wh2_main_lzd_itza", "wh2_main_lzd_hexoatl", },
+            },
+            -- Empire = {
+            wh_main_emp_empire = {
+                Factions = { "wh_main_vmp_vampire_counts", "wh_main_vmp_schwartzhafen", },
+                MinimumImperium = 1,
+            },
+            wh2_dlc13_emp_golden_order = {
+                Factions = { "wh_main_vmp_vampire_counts", "wh_main_vmp_schwartzhafen", },
+                MinimumImperium = 1,
             },
             -- Skaven
             wh2_main_skv_clan_mors = {
@@ -69,6 +92,23 @@ function GetAlignmentPoolData()
             },
             wh2_dlc11_vmp_the_barrow_legion = {
                 Factions = { "wh_main_brt_bretonnia", "wh_main_emp_empire", },
+            },
+        },
+        -- These are effect bonuses that will be applied if the rival faction matches this subculture
+        RivalEffects = {
+            wh_main_sc_vmp_vampire_counts = {
+                wh2_dlc11_effect_tech_no_upkeep_cost_zombies = {
+                    Scope = "faction_to_faction_own_unseen",
+                    Value = -100,
+                },
+                wh2_dlc11_effect_tech_no_upkeep_cost_skeletons = {
+                    Scope = "faction_to_faction_own_unseen",
+                    Value = -100,
+                },
+                wh_main_effect_unit_recruitment_points = {
+                    Scope = "faction_to_faction_own_unseen",
+                    Value = 2,
+                },
             },
         },
         -- Only some order factions receive alignment bonuses
@@ -102,7 +142,14 @@ function GetAlignmentPoolData()
             wh_main_brt_bretonnia = 0,
             wh_main_brt_carcassonne = 0,
             wh2_dlc14_brt_chevaliers_de_lyonesse = 0,
+            -- Stirland has two province capitals, so needs -2 to bring them in line
+            -- with other empire factions. Also helps Vlad and Mannfred out
+            wh_main_emp_stirland = -2,
             wh_main_ksl_kislev = 0,
+            -- ER Kislev only faction, helps non-order factions not
+            -- have as strong a wall, especially with the main Kislev faction nearby
+            -- which get alignment bonuses. This is mostly for players who don't have the vamp faction enabled
+            wh_main_ksl_praag = -2,
             -- These Dwarfs actually need some help
             wh_main_dwf_karak_kadrin = 1,
             -- Matches default - Testing purposes
@@ -111,11 +158,11 @@ function GetAlignmentPoolData()
             wh2_main_hef_order_of_loremasters = 0,
             -- If one high elf faction should be more a threat, its this one
             wh2_main_hef_eataine = -1,
-            -- Has a difficult start
+            -- Has a difficult start and can use a boost
             wh2_dlc15_hef_imrik = 0,
             -- Major Lustrian Lizardmen factions should be more of a threat
             -- Mazdamundi especially needs some help
-            wh2_main_lzd_hexoatl = 1,
+            wh2_main_lzd_hexoatl = 0,
             wh2_main_lzd_itza = 0,
             wh2_dlc12_lzd_cult_of_sotek = 0,
             -- Except defenders, they get rolling too easily

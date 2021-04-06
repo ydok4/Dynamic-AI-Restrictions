@@ -146,11 +146,16 @@ function DynamicAIRestrictions:SetupListeners(core)
                 if rivalData ~= nil then
                     if rivalData.Factions ~= nil then
                         self.Logger:Log("Checking for new rivals...");
+                        local minimumImperiumForRival = self.MinimumRequiredImperiumForRival;
+                        if rivalData.MinimumImperium ~= nil then
+                            minimumImperiumForRival = rivalData.MinimumImperium;
+                        end
                         for index, rivalFactionKey in pairs(rivalData.Factions) do
-                            if playerImperiumLevel > self.MinimumRequiredImperiumForRival + (index - 1) then
+                            if playerImperiumLevel > minimumImperiumForRival + (index - 1) then
                                 self.Logger:Log("Player meets requirement for rival: "..rivalFactionKey);
                                 local rivalFaction = cm:get_faction(rivalFactionKey);
                                 self:UnRestrictConfederationsForFaction(rivalFaction);
+                                self:ApplyRivalFactionEffects(rivalFaction);
                             end
                         end
                     end
@@ -397,6 +402,19 @@ function DynamicAIRestrictions:UnRestrictConfederationsForFaction(exceptFaction)
     -- Unrestrict confederations for faction within culture
     self.Logger:Log("IRD: Unrestricting diplomacy for "..tostring(exceptFaction:name()))
     cm:force_diplomacy("faction:"..exceptFaction:name(), "all", "form confederation", true, true, false);
+end
+
+function DynamicAIRestrictions:ApplyRivalFactionEffects(rivalFaction)
+    local rivalSubculture = rivalFaction:subculture();
+    local rivalEffects = self.Resources.RivalEffects[rivalSubculture];
+    if rivalEffects ~= nil then
+        self.Logger:Log("Applying rival effect for subculture: "..rivalSubculture);
+        local customEffectBundle = cm:create_new_custom_effect_bundle("wh_main_effect_dair_dummy_rival_effects");
+        for effectKey, effectData in pairs(rivalEffects) do
+            customEffectBundle:add_effect(effectKey, effectData.Scope, effectData.Value);
+        end
+        cm:apply_custom_effect_bundle_to_faction(customEffectBundle, rivalFaction);
+    end
 end
 
 -- This should only be used for single player functions
