@@ -142,24 +142,26 @@ function GetAlignmentPoolData()
             wh_main_brt_bretonnia = 0,
             wh_main_brt_carcassonne = 0,
             wh2_dlc14_brt_chevaliers_de_lyonesse = 0,
-            -- Stirland has two province capitals, so needs -2 to bring them in line
-            -- with other empire factions. Also helps Vlad and Mannfred out
-            wh_main_emp_stirland = -2,
             wh_main_ksl_kislev = 0,
-            -- ER Kislev only faction, helps non-order factions not
+            -- With the Moot excluded from giving army bonuses
+            -- Vlad needs an extra bonus since he only starts with a minor settlement
+            -- It also lets him recruit Isabella at the same time
+            wh_main_vmp_schwartzhafen = 2,
+            -- ER Kislev only factions, helps chaos not
             -- have as strong a wall, especially with the main Kislev faction nearby
-            -- which get alignment bonuses. This is mostly for players who don't have the vamp faction enabled
+            -- which get alignment bonuses.
             wh_main_ksl_praag = -2,
+            wh_main_vmp_tri = -1,
             -- These Dwarfs actually need some help
-            wh_main_dwf_karak_kadrin = 1,
+            wh_main_dwf_karak_kadrin = 0,
             -- Matches default - Testing purposes
             wh2_dlc13_emp_the_huntmarshals_expedition = -1,
-            -- Difficult start amongst enemies
-            wh2_main_hef_order_of_loremasters = 0,
             -- If one high elf faction should be more a threat, its this one
             wh2_main_hef_eataine = -1,
+            -- Difficult start amongst enemies
+            wh2_main_hef_order_of_loremasters = -1,
             -- Has a difficult start and can use a boost
-            wh2_dlc15_hef_imrik = 0,
+            wh2_dlc15_hef_imrik = 1,
             -- Major Lustrian Lizardmen factions should be more of a threat
             -- Mazdamundi especially needs some help
             wh2_main_lzd_hexoatl = 0,
@@ -181,8 +183,14 @@ function GetAlignmentPoolData()
             -- These two tend to overperform in the Badlands
             wh_main_dwf_dwarfs = -2, -- They still beat Grimgor!
             wh_main_dwf_karak_azul = -2,
-            -- Grimgor needs some help
+            -- Major Greenskin factions need some help
             wh_main_grn_greenskins = 2,
+            wh_main_grn_crooked_moon = 2,
+            wh2_dlc15_grn_broken_axe = 2,
+            -- Minor greenskins can over perform now
+            wh_main_grn_scabby_eye = 0,
+            wh_main_grn_teef_snatchaz = 0,
+            wh2_dlc15_grn_skull_crag = 0,
             -- Mixu Unlocker specific
             wh2_main_wef_wychwethyl = -1,
         },
@@ -197,6 +205,7 @@ function GetAlignmentPoolData()
             wh2_main_fort_helmgart = true,
             wh2_main_fort_soll = true,
             wh2_main_fort_bergbres = true,
+            wh_main_stirland_the_moot = true,
             -- Vortex
             wh2_main_vor_griffon_gate = true,
             wh2_main_vor_eagle_gate = true,

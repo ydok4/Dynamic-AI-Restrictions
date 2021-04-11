@@ -199,6 +199,56 @@ function DynamicAIRestrictions:SetupListeners(core)
 		end,
 		true
     );
+    -- Remove greenskin confederation listeners and change it so it only works for the player in the early game
+    -- Confederation makes the Greenskin AI more susceptible to being wiped (especially in the Badlands)
+    local greenskin = "wh_main_sc_grn_greenskins";
+    core:remove_listener("character_completed_battle_greenskin_confederation_dilemma");
+	core:add_listener(
+		"character_completed_battle_greenskin_confederation_dilemma",
+		"CharacterCompletedBattle",
+		true,
+        function(context)
+            -- We use this as the trigger to re-enable confederations for the AI
+            local mid_bonus_alignment_armies enabled = cm:get_saved_value("mid_bonus_alignment_armies_enabled");
+            local character = context:character();
+            if character:won_battle() == true and character:faction():subculture() == greenskin and not character:faction():name():find("rebel") 
+            and not character:faction():name():find("invasion") and not character:faction():name():find("waaagh") and character:faction():is_quest_battle_faction() == false then
+                local enemies = cm:pending_battle_cache_get_enemies_of_char(character);
+                local enemy_count = #enemies;
+                if context:pending_battle():night_battle() == true or context:pending_battle():ambush_battle() == true then
+                    enemy_count = 1;
+                end
+
+                local character_cqi = character:command_queue_index();
+                local attacker_cqi, attacker_force_cqi, attacker_name = cm:pending_battle_cache_get_attacker(1);
+                local defender_cqi, defender_force_cqi, defender_name = cm:pending_battle_cache_get_defender(1);
+                if character_cqi == attacker_cqi or character_cqi == defender_cqi then
+                    for i = 1, enemy_count do
+                        local enemy = enemies[i];
+                        if enemy ~= nil and enemy:is_null_interface() == false and enemy:is_faction_leader() == true and enemy:faction():subculture() == greenskin and enemy:faction():is_quest_battle_faction() == false then
+                            if enemy:has_military_force() == true and enemy:military_force():is_armed_citizenry() == false then
+                                if character:faction():is_human() == true and enemy:faction():is_human() == false and enemy:faction():is_dead() == false then
+                                    -- Trigger dilemma to offer confederation
+                                    local GREENSKIN_CONFEDERATION_PLAYER = character:faction():name();
+                                    local GREENSKIN_CONFEDERATION_DILEMMA = "wh2_main_grn_confederate_";
+                                    cm:trigger_dilemma(GREENSKIN_CONFEDERATION_PLAYER, GREENSKIN_CONFEDERATION_DILEMMA..enemy:faction():name());
+                                -- Condition is changed so it only fires for the AI if the player has reached an appropriate imperium level
+                                elseif mid_bonus_alignment_armies == true and not character:faction():name():find("rebel") and character:faction():is_human() == false and enemy:faction():is_human() == false then
+                                    out.design("###### Modified greenskin CONFEDERATION");
+                                    -- AI confederation
+                                    cm:force_confederation(character:faction():name(), enemy:faction():name());
+                                    out.design("###### AI GREENSKIN CONFEDERATION");
+                                    out.design("Faction: "..character:faction():name().." is confederating "..enemy:faction():name());
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+		end,
+		true
+	);
+
     local campaignName = cm:get_campaign_name();
     core:add_listener(
         "DAI_RegionTurnStart",
@@ -301,6 +351,18 @@ function DynamicAIRestrictions:CreateCachedData(faction)
         local bonusAlignmentArmies = cm:get_saved_value("bonus_alignment_armies");
         self.Logger:Log("Adding alignment bonus ("..bonusAlignmentArmies..") to faction: "..factionKey);
         overallLordCap = overallLordCap + bonusAlignmentArmies;
+    end
+
+    -- We only apply this bonus if the player is an order faction
+    if playersAlignment["ForcesOfOrder"] ~= nil
+    and factionAlignment ~= "ForcesOfOrder" then
+        for factionKey, humanFaction in pairs(self.HumanFactions) do
+            if faction:at_war_with(humanFaction) == true then
+                self.Logger:Log("Adding +1 bonus because faction is at war with human order faction");
+                overallLordCap = overallLordCap + 1;
+                break;
+            end
+        end
     end
 
     self.Logger:Log("Army limit: "..overallLordCap);
