@@ -146,7 +146,7 @@ function GetAlignmentPoolData()
             -- With the Moot excluded from giving army bonuses
             -- Vlad needs an extra bonus since he only starts with a minor settlement
             -- It also lets him recruit Isabella at the same time
-            wh_main_vmp_schwartzhafen = 2,
+            --wh_main_vmp_schwartzhafen = 2,
             -- ER Kislev only factions, helps chaos not
             -- have as strong a wall, especially with the main Kislev faction nearby
             -- which get alignment bonuses.
@@ -158,6 +158,8 @@ function GetAlignmentPoolData()
             wh2_dlc13_emp_the_huntmarshals_expedition = -1,
             -- If one high elf faction should be more a threat, its this one
             wh2_main_hef_eataine = -1,
+            -- Drycha takes a little too much territory
+            wh2_dlc16_wef_drycha = -1,
             -- Difficult start amongst enemies
             wh2_main_hef_order_of_loremasters = -1,
             -- Has a difficult start and can use a boost

@@ -10,6 +10,8 @@ DynamicAIRestrictions = {
         FactionKey = "",
         LordCap = 2,
     },
+    -- Contains a reference to the Chaos Invasion Object
+    CI_DATA = {},
 };
 
 function DynamicAIRestrictions:new (o)
@@ -19,7 +21,7 @@ function DynamicAIRestrictions:new (o)
     return o;
 end
 
-function DynamicAIRestrictions:Initialise(core, enableLogging)
+function DynamicAIRestrictions:Initialise(core, CI_DATA, enableLogging)
     self.Logger = Logger:new({});
     self.Logger:Initialise("MightyCampaigns-DynamicAIRestrictions.txt", enableLogging);
     require 'script/_lib/pooldata/AlignmentPoolData'
@@ -27,6 +29,12 @@ function DynamicAIRestrictions:Initialise(core, enableLogging)
     self.Logger:Log_Start();
     self:SetHumanFactions();
     self:SetupListeners(core);
+    self.CI_DATA = CI_DATA;
+    if self.CI_DATA ~= nil
+    and (self.CI_DATA.CI_INVASION_STAGE == 2
+    or self.CI_DATA.CI_INVASION_STAGE == 3) then
+        self.Logger:Log("Applying Chaos Invasion bonus for Kislev");
+    end
     if cm:is_new_game() then
         self.Logger:Log("Initialising new game options...");
         self:SetupNewGameOptions();
@@ -100,6 +108,7 @@ function DynamicAIRestrictions:SetupListeners(core)
         true
     );
 
+    local campaignName = cm:get_campaign_name();
     core:add_listener(
         "DAIR_UpdateConfederationOptions",
         "FactionTurnEnd",
@@ -249,7 +258,6 @@ function DynamicAIRestrictions:SetupListeners(core)
 		true
 	);
 
-    local campaignName = cm:get_campaign_name();
     core:add_listener(
         "DAI_RegionTurnStart",
         "RegionTurnStart",
@@ -313,9 +321,13 @@ function DynamicAIRestrictions:ApplyArmyLimits(faction)
 end
 
 function DynamicAIRestrictions:CreateCachedData(faction)
+    local campaignName = cm:get_campaign_name();
     local factionKey = faction:name();
     local subcultureKey = faction:subculture();
+    local numberOfLocalRegions = 0;
+    local minimumArmyAmount = 0;
     local overallLordCap = 0;
+    -- Climate bonus armies
     local regionList = faction:region_list();
     for i = 0, regionList:num_items() - 1 do
         local region = regionList:item_at(i);
@@ -328,21 +340,48 @@ function DynamicAIRestrictions:CreateCachedData(faction)
             if region:is_province_capital() == true then
                 self.Logger:Log("Region: "..region:name().." is suitable.");
                 overallLordCap = overallLordCap + 1;
+                -- If the faction is a hef faction
+                -- and this is an ulthuan region that isn't Tor Anlec
+                -- then we increase the number of 'local' regions
+                if subcultureKey == "wh2_main_sc_hef_high_elves"
+                and self.Resources.UlthuanRegions[campaignName][regionKey] == true
+                and regionKey ~= "wh2_main_nagarythe_tor_anlec"
+                and regionKey ~= "wh2_main_vor_nagarythe_tor_anlec" then
+                    numberOfLocalRegions = numberOfLocalRegions + 1;
+                    -- Then we increase the minimum army amount
+                    -- If they have more than 1, we increase their minimum army amount
+                    if numberOfLocalRegions > 1 then
+                        self.Logger:Log("Hef faction has additional Ulthuan region: "..region:name());
+                        minimumArmyAmount = minimumArmyAmount + 1;
+                    end
+                end
             end
         end
     end
     self.Logger:Log("Region/Climate bonus is: "..overallLordCap);
+    -- Faction bonus armies
     local factionBonusArmies = self:GetFactionBonusArmies(faction);
     self.Logger:Log("Faction bonus is: "..factionBonusArmies);
     overallLordCap = overallLordCap + factionBonusArmies;
+    -- Apply Chaos Invasion bonus because Kislev will lose territory really fast
+    if factionKey == "wh_main_ksl_kislev"
+    and self.CI_DATA ~= nil
+    and (self.CI_DATA.CI_INVASION_STAGE == 2
+    or self.CI_DATA.CI_INVASION_STAGE == 3) then
+        self.Logger:Log("Applying Chaos Invasion bonus for Kislev");
+        overallLordCap = overallLordCap + 1;
+    end
+    -- Enforce minimum
+    -- Lokhir needs a boost in Mortal Empires
     if factionKey == "wh2_dlc11_def_the_blessed_dread"
     and overallLordCap < 1
     and cm:get_campaign_name() == "main_warhammer" then
         overallLordCap = 1;
-    elseif overallLordCap < 0 then
-        overallLordCap = 0;
+    elseif overallLordCap < minimumArmyAmount then
+        overallLordCap = minimumArmyAmount;
     end
-
+    self.Logger:Log("Adjusted cap with minimum: "..overallLordCap);
+    -- Alignment bonus armies
     local playersAlignment = self:GetPlayersAlignment();
     local factionAlignment = self:GetFactionAlignment(faction);
     if playersAlignment[factionAlignment] == nil

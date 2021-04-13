@@ -13,7 +13,7 @@ function zzz_mighty_campaigns_dynamic_ai_restrictions()
     local enableLogging = true;
     out("DAIR: Main mod function");
     DAIR = DynamicAIRestrictions:new({});
-    DAIR:Initialise(core, enableLogging);
+    DAIR:Initialise(core, CI_DATA, enableLogging);
     DAIR.Logger:Log("Initialised");
     DAIR.Logger:Log_Finished();
     _G.MC_CS = DAIR;
