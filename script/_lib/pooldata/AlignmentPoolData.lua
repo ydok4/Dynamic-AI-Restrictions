@@ -163,7 +163,7 @@ function GetAlignmentPoolData()
             -- Difficult start amongst enemies
             wh2_main_hef_order_of_loremasters = -1,
             -- Has a difficult start and can use a boost
-            wh2_dlc15_hef_imrik = 1,
+            wh2_dlc15_hef_imrik = -1,
             -- Major Lustrian Lizardmen factions should be more of a threat
             -- Mazdamundi especially needs some help
             wh2_main_lzd_hexoatl = 0,
@@ -190,9 +190,9 @@ function GetAlignmentPoolData()
             wh_main_grn_crooked_moon = 2,
             wh2_dlc15_grn_broken_axe = 2,
             -- Minor greenskins can over perform now
-            wh_main_grn_scabby_eye = 0,
+            wh_main_grn_scabby_eye = 1, -- Testing
+            wh2_dlc15_grn_skull_crag = 1, -- Testing
             wh_main_grn_teef_snatchaz = 0,
-            wh2_dlc15_grn_skull_crag = 0,
             -- Mixu Unlocker specific
             wh2_main_wef_wychwethyl = -1,
         },
