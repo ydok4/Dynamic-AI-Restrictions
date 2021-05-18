@@ -137,7 +137,7 @@ function GetAlignmentPoolData()
             wh2_main_sc_lzd_lizardmen = -1,
             wh_main_sc_nor_norsca = 1,
             -- Order aligned major Factions
-            wh_main_emp_empire = 0,
+            wh_main_emp_empire = 1,
             wh2_dlc13_emp_golden_order = 0,
             wh_main_brt_bretonnia = 0,
             wh_main_brt_carcassonne = 0,
@@ -182,7 +182,11 @@ function GetAlignmentPoolData()
             -- Helps the Naggarond AI out
             wh2_dlc16_grn_naggaroth_orcs = 0,
             wh2_main_skv_clan_septik = 1,
-            -- These two tend to overperform in the Badlands
+            -- Clan mors tends to dominate in the badlands
+            wh2_main_skv_clan_mors = 1,
+            -- And we don't want Rictus to overpower the Dark Elves
+            wh2_dlc09_skv_clan_rictus = 1,
+            -- These two dwarfs tend to overperform in the Badlands
             wh_main_dwf_dwarfs = -2, -- They still beat Grimgor!
             wh_main_dwf_karak_azul = -2,
             -- Major Greenskin factions need some help
@@ -195,6 +199,8 @@ function GetAlignmentPoolData()
             wh_main_grn_teef_snatchaz = 0,
             -- Mixu Unlocker specific
             wh2_main_wef_wychwethyl = -1,
+            -- Starts with a minor settlement so needs a boost
+            wh_main_vmp_mousillon = 2,
         },
         -- Factions starting with single regions
         -- get too big of an advantage. Eg Elyrion

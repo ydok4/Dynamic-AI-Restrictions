@@ -36,13 +36,13 @@ testMilitaryForce = {
 humanFaction = {
     command_queue_index = function() return 10; end,
     name = function()
-        return "wh2_main_def_naggarond";
+        return "wh_main_brt_bretonnia";
     end,
     culture = function()
-        return "wh2_main_def_dark_elves";
+        return "wh_main_emp_empire";
     end,
     subculture = function()
-        return "wh_main_sc_brt_bretonnia";
+        return "wh_main_sc_teb_teb";
     end,
     is_dead = function() return false; end,
     character_list = function()
@@ -153,7 +153,7 @@ testFaction = {
         return "wh2_main_lzd_lizardmen";
     end,
     subculture = function()
-        return "wh_main_sc_brt_bretonnia";
+        return "wh_main_sc_vmp_vampire_counts";
     end,
     is_dead = function() return false; end,
     character_list = function()

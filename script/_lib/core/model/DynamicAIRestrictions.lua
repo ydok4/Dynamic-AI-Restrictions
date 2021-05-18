@@ -297,10 +297,9 @@ function DynamicAIRestrictions:ApplyArmyLimits(faction)
     and faction:name() ~= "wh2_dlc13_lzd_spirits_of_the_jungle" then
         self:CreateCachedData(faction);
         local factionKey = faction:name();
-        self.Logger:Log("Applying army limits for faction: "..factionKey);
+        self.Logger:Log("Applying army limits for faction: "..factionKey.." number of armies is: "..(self.CachedData.LordCap + 1));
         local customEffectBundle = cm:create_new_custom_effect_bundle("wh_main_effect_dair_dummy_army_cap");
         local useUnlimited = false;
-        self.Logger:Log("Created effect bundle");
         -- When using Lichemaster and we are updating Kemmler's faction, they should have unlimited armies
         -- cause they are capped anyway
         if self.LoadedLichemaster == true
@@ -309,7 +308,7 @@ function DynamicAIRestrictions:ApplyArmyLimits(faction)
         end
         if useUnlimited == true
         or faction:is_human() == true then
-            self.Logger:Log("Use unlimited");
+            self.Logger:Log("Using unlimited army cap");
             customEffectBundle:add_effect("wh2_dlc09_effect_increase_army_capacity", "faction_to_faction_own_unseen", 9999);
         else
             customEffectBundle:add_effect("wh2_dlc09_effect_increase_army_capacity", "faction_to_faction_own_unseen", self.CachedData.LordCap);
@@ -324,9 +323,10 @@ function DynamicAIRestrictions:CreateCachedData(faction)
     local campaignName = cm:get_campaign_name();
     local factionKey = faction:name();
     local subcultureKey = faction:subculture();
+    local baseArmyCap = -1; -- By default the game ensures the minimum cap is 1
     local numberOfLocalRegions = 0;
     local minimumArmyAmount = 0;
-    local overallLordCap = 0;
+    local overallLordCap = baseArmyCap;
     -- Climate bonus armies
     local regionList = faction:region_list();
     for i = 0, regionList:num_items() - 1 do
@@ -478,6 +478,7 @@ function DynamicAIRestrictions:SetupDiplomacyRestrictions()
         and humanFaction:culture() ~= "wh2_dlc11_cst_vampire_coast" then
             cm:callback(function()
                 self:UnRestrictConfederationsForFaction(humanFaction);
+                self.Logger:Log_Finished();
             end, 0.2);
         end
     end
