@@ -140,7 +140,7 @@ function DynamicAIRestrictions:SetupListeners(core)
             if playerImperiumLevel > 5 then
                 if unrestrictOrderFederations == false then
                     local playersAlignment = self:GetPlayersAlignment();
-                    if playersAlignment["ForcesOfOrder"] ~= nil then
+                    if playersAlignment["ForcesOfOrder"] == nil then
                         self.Logger:Log("Unrestricting order forces confederations...");
                         for index, cultureKey in pairs(self.Resources.Alignments["ForcesOfOrder"]) do
                             self:UnRestrictConfederationsForCulture(cultureKey);
@@ -388,10 +388,14 @@ function DynamicAIRestrictions:CreateCachedData(faction)
     and (self.Resources.OrderAlignmentBonusFactions[factionKey] == true
     or factionAlignment ~= "ForcesOfOrder") then
         local bonusAlignmentArmies = cm:get_saved_value("bonus_alignment_armies");
+        if bonusAlignmentArmies == nil then
+            self.Logger:Log("Bonus alignment armies is nil");
+            cm:set_saved_value("bonus_alignment_armies", 0);
+            bonusAlignmentArmies = 0;
+        end
         self.Logger:Log("Adding alignment bonus ("..bonusAlignmentArmies..") to faction: "..factionKey);
         overallLordCap = overallLordCap + bonusAlignmentArmies;
     end
-
     -- We only apply this bonus if the player is an order faction
     if playersAlignment["ForcesOfOrder"] ~= nil
     and factionAlignment ~= "ForcesOfOrder" then

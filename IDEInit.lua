@@ -147,13 +147,13 @@ pooledResourceFactor = {
 testFaction = {
     command_queue_index = function() return 10; end,
     name = function()
-        return "wh2_main_lzd_last_defenders";
+        return "wh2_dlc16_wef_drycha";
     end,
     culture = function()
-        return "wh2_main_lzd_lizardmen";
+        return "wh_dlc05_wef_wood_elves";
     end,
     subculture = function()
-        return "wh_main_sc_vmp_vampire_counts";
+        return "wh_dlc05_sc_wef_wood_elves";
     end,
     is_dead = function() return false; end,
     character_list = function()

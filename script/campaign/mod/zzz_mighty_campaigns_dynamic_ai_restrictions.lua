@@ -10,7 +10,7 @@ require 'script/_lib/core/model/DynamicAIRestrictions';
 require 'script/_lib/core/model/Logger';
 
 function zzz_mighty_campaigns_dynamic_ai_restrictions()
-    local enableLogging = true;
+    local enableLogging = false;
     out("DAIR: Main mod function");
     DAIR = DynamicAIRestrictions:new({});
     DAIR:Initialise(core, CI_DATA, enableLogging);
